@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import db from '../firebase';
 
-function ContactList() {
+function SideNav() {
   const [contacts, setContacts] = useState([]);
 
   useEffect(() => {
@@ -22,21 +22,19 @@ function ContactList() {
   }, []);
 
   return (
-    <div className="ContactList">
-      <h1>ContactList</h1>
-      <ul>
-        {contacts.map((contact) => {
-          return (
-            <li key={contact.id}>
-              <NavLink className="title" to={'/contacts/' + contact.id}>
-                {contact.firstName + ' ' + contact.lastName}
-              </NavLink>
-            </li>
-          );
-        })}
-      </ul>
+    <div className="SideNav">
+      <NavLink to="/tasks">Tasks</NavLink>
+      <NavLink to="/contacts">Contacts</NavLink>
+      <div className="SideNav__title">Recent</div>
+      {contacts.map((contact) => {
+        return (
+          <NavLink key={contact.id} to={'/contacts/' + contact.id}>
+            {contact.firstName + ' ' + contact.lastName}
+          </NavLink>
+        );
+      })}
     </div>
   );
 }
 
-export default ContactList;
+export default SideNav;
