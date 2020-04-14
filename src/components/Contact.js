@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Route, Switch, Redirect } from 'react-router-dom';
+import firebase from 'firebase';
+
 import NoteList from './NoteList';
 import TaskList from './TaskList';
 import db from '../firebase';
@@ -20,6 +22,12 @@ function Contact(props) {
           let doc = { ...snapshot.data() };
           doc.id = snapshot.id;
           setContact(doc);
+          db.collection('recents').add({
+            contactId: doc.id,
+            firstName: doc.firstName,
+            lastName: doc.lastName,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          });
         }
       });
     return () => unsubscribe();
@@ -56,11 +64,11 @@ function Contact(props) {
       <h1>{contact.firstName + ' ' + contact.lastName}</h1>
       <div className="Contact__body">
         <div className="Contact__notes">
-          <h2>Notes</h2>
-          <NoteList contactId={contact.id} />
+          {/*<h2>Notes</h2>*/}
+          <NoteList contact={contact} />
         </div>
         <div className="Contact__tasks">
-          <h2>Tasks</h2>
+          {/*<h2>Tasks</h2>*/}
           <TaskList contactId={contact.id} />
         </div>
       </div>

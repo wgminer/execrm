@@ -3,7 +3,17 @@ import { Route, Switch, Redirect } from 'react-router-dom';
 import TextareaAutosize from 'react-autosize-textarea';
 import { fromUnixTime, format } from 'date-fns';
 import firebase from 'firebase';
+import ReactMarkdown from 'react-markdown';
 import db from '../firebase';
+
+function NoteTimestamp(props) {
+  let text = format(new Date(), 'E, MMM dd');
+  if (props.timestamp && props.timestamp.seconds) {
+    text = format(fromUnixTime(props.timestamp.seconds), 'E, MMM dd @ h:mm a');
+  }
+
+  return <div className="Note__timestamp">{text}</div>;
+}
 
 function NoteList(props) {
   const [notes, setNotes] = useState([]);
@@ -13,8 +23,8 @@ function NoteList(props) {
   useEffect(() => {
     let ref = db.collection('notes').orderBy('createdAt', 'desc');
 
-    if (props.contactId) {
-      ref = ref.where('contactId', '==', props.contactId);
+    if (props.contact.id) {
+      ref = ref.where('contactId', '==', props.contact.id);
     }
 
     const unsubscribe = ref.onSnapshot((snapshot) => {
@@ -31,16 +41,24 @@ function NoteList(props) {
       }
     });
     return () => unsubscribe();
-  }, [props.contactId]);
+  }, [props.contact.id]);
 
   function updateNote(e, index) {
-    let note = notes[index];
+    let notesCopy = [...notes];
+    let note = notesCopy[index];
     note[e.target.name] = e.target.value;
     note.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
     db.collection('notes').doc(note.id).set(note);
+    notesCopy[index] = note;
+    setNotes(notesCopy);
+  }
+
+  function deleteNote(e, index) {
+    db.collection('notes').doc(notes[index].id).delete();
   }
 
   async function createNote(e) {
+    e.preventDefault();
     let newNote = {
       text: '',
       title: '',
@@ -48,11 +66,12 @@ function NoteList(props) {
       updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
     };
 
-    if (props.contactId) {
-      newNote.contactId = props.contactId;
+    if (props.contact.id) {
+      newNote.contactId = props.contact.id;
     }
 
-    db.collection('notes').add(newNote);
+    newNote = await db.collection('notes').add(newNote);
+    setFocusedNote(newNote.id);
   }
 
   if (focusedNote) {
@@ -61,52 +80,73 @@ function NoteList(props) {
     document.body.classList.remove('no-scroll');
   }
 
-  console.log(notes);
-
   return (
     <div className="NoteList">
-      {/*<button onClick={createNote}>New Note</button>*/}
-      <ul>
-        {notes.map((note, index) => {
-          if (focusedNote != note.id) {
-            return (
-              <div key={note.id} className="Note">
-                <div className="Note__timestamp">
-                  {format(fromUnixTime(note.createdAt.seconds), 'E, MMM dd')}
-                </div>
-                <div
-                  className="Note__text"
-                  onClick={() => setFocusedNote(note.id)}
-                >
-                  {note.text}
-                </div>
-              </div>
-            );
-          }
-
+      <button className="button" onClick={createNote}>
+        + New Note
+      </button>
+      {notes.map((note, index) => {
+        if (focusedNote != note.id) {
           return (
-            <li key={note.id} className="Note">
+            <div key={note.id} className="Note">
+              <NoteTimestamp timestamp={note.createdAt} />
               <div
-                className="Note__overlay"
-                onClick={() => setFocusedNote(false)}
+                className="Note__text Markdown"
+                onClick={() => setFocusedNote(note.id)}
               >
-                <div
-                  className="Note__editor"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <TextareaAutosize
-                    autoFocus={true}
-                    name="text"
-                    // onBlur={() => setFocusedNote(false)}
-                    onChange={(e) => updateNote(e, index)}
-                    value={note.text}
-                  />
+                <ReactMarkdown source={note.text} />
+              </div>
+            </div>
+          );
+        }
+
+        return (
+          <div key={note.id} className="Note is--focused">
+            <div className="Note__placeholder" />
+            <div
+              className="Note__overlay"
+              onClick={() => setFocusedNote(false)}
+            >
+              <div
+                className="Note__editor"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <TextareaAutosize
+                  autoFocus={true}
+                  name="text"
+                  onKeyUp={(e) => {
+                    if (e.key === 'Escape') {
+                      setFocusedNote(false);
+                    }
+                  }}
+                  onChange={(e) => updateNote(e, index)}
+                  value={note.text}
+                />
+                <div className="Note__details">
+                  <dl>
+                    <dt>Contact</dt>
+                    <dd>
+                      {props.contact.firstName + ' ' + props.contact.lastName}
+                    </dd>
+
+                    <dt>Created</dt>
+                    <dd>
+                      <NoteTimestamp timestamp={note.createdAt} />
+                    </dd>
+                  </dl>
+
+                  <button
+                    className="Note__delete button button--delete"
+                    onClick={(e) => deleteNote(e, index)}
+                  >
+                    Delete
+                  </button>
                 </div>
               </div>
-            </li>
-          );
-        })}
-      </ul>
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }

@@ -12,6 +12,7 @@ import db from '../firebase';
 function TaskList(props) {
   const [tasks, setTasks] = useState([]);
   const [formInput, setFormInput] = useState('');
+  const [focusedTask, setFocusedTask] = useState(false);
 
   useEffect(() => {
     let ref = db.collection('tasks').orderBy('createdAt', 'desc');
@@ -37,10 +38,13 @@ function TaskList(props) {
   }, [props.contactId]);
 
   function updateTask(e, i) {
-    let task = tasks[i];
+    let taskCopy = [...tasks];
+    let task = taskCopy[i];
     task[e.target.name] = e.target.value;
     task.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
     db.collection('tasks').doc(task.id).set(task);
+    taskCopy[i] = task;
+    setTasks(taskCopy);
   }
 
   function toggleTaskComplete(i) {
@@ -69,16 +73,58 @@ function TaskList(props) {
     setFormInput('');
   }
 
+  function deleteTask(e, index) {
+    db.collection('tasks').doc(tasks[index].id).delete();
+  }
+
   return (
     <div className="TaskList">
       <form onSubmit={createTask}>
         <input
           onChange={(e) => setFormInput(e.target.value)}
           value={formInput}
+          placeholder="+ New Task"
         />
       </form>
       <ul>
         {tasks.map((task, i) => {
+          if (focusedTask == task.id) {
+            return (
+              <li key={task.id} className="Task is--focused">
+                <input
+                  type="checkbox"
+                  checked={task.isComplete}
+                  onChange={(e) => toggleTaskComplete(i)}
+                />
+                <div>
+                  <TextareaAutosize
+                    autoFocus={true}
+                    name="text"
+                    onChange={(e) => updateTask(e, i)}
+                    onBlur={() =>
+                      setTimeout(() => {
+                        setFocusedTask(false);
+                      }, 100)
+                    }
+                    value={task.text}
+                    rows={1}
+                    onKeyUp={(e) => {
+                      if (e.key === 'Escape') {
+                        setFocusedTask(false);
+                      }
+                    }}
+                  />
+                  <button
+                    className="Note__delete button button--delete"
+                    onClick={(e) => deleteTask(e, i)}
+                  >
+                    Delete
+                  </button>
+                </div>
+              </li>
+            );
+          }
+
           return (
             <li key={task.id} className="Task">
               <input
@@ -86,13 +132,12 @@ function TaskList(props) {
                 checked={task.isComplete}
                 onChange={(e) => toggleTaskComplete(i)}
               />
-              <TextareaAutosize
-                autoFocus={true}
-                name="text"
-                onChange={(e) => updateTask(e, i)}
-                value={task.text}
-                rows={1}
-              />
+              <div
+                className="Task__text"
+                onClick={() => setFocusedTask(task.id)}
+              >
+                {task.text}
+              </div>
             </li>
           );
         })}
