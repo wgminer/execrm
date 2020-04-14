@@ -27,6 +27,8 @@ function ContactNew() {
     return <Redirect to={'/contacts/' + contactId} />;
   }
 
+  document.title = `New Contact | Execrm`;
+
   return (
     <div className="ContactNew">
       <h1>New Contact</h1>

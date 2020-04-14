@@ -100,7 +100,6 @@ label {
 	left: 0;
 	top: 0;
 	height: 100vh;
-	// background-color: #f9f9f9;
 
 	&__title {
 		color: #999;
@@ -121,6 +120,12 @@ label {
 	ul {
 		padding: 0;
 		margin: 0;
+
+		+ ul {
+			padding-top: 0.75rem;
+			margin-top: 0.75rem;
+			border-top: 1px solid #eee;
+		}
 	}
 
 	form {
@@ -177,16 +182,20 @@ label {
 
 .Task {
 	display: flex;
-	// align-items: center;
+
+	&.is--complete {
+		opacity: 0.25;
+	}
 
 	&__text {
 		padding: 9px 1rem 9px 0;
 		line-height: 1.5;
+		width: 100%;
+		cursor: text;
 	}
 
 	&.is--focused {
 		margin: 0.75rem 0;
-		// display: block;
 	}
 
 	input {
@@ -201,11 +210,9 @@ label {
 	}
 
 	textarea {
-		// border: 0;
 		padding: 0.5rem 0.75rem;
 		margin-bottom: 0.75rem;
 		width: 600px;
-		// margin-left: 0.75rem;
 	}
 }
 
@@ -232,7 +239,6 @@ label {
 
 	&__placeholder {
 		min-height: 200px;
-		// background-color: #eee;
 	}
 
 	&__timestamp {
@@ -355,7 +361,6 @@ label {
 	}
 
 	li + li {
-		// margin-top: 0.5rem;
 	}
 
 	h1,

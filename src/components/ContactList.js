@@ -24,6 +24,8 @@ function ContactList() {
     return () => unsubscribe();
   }, []);
 
+  document.title = `Contacts | Execrm`;
+
   return (
     <div className="ContactList">
       <h1>Contacts</h1>
