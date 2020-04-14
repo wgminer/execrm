@@ -24,7 +24,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "save": "git add . && git commit -m 'Quick save' && git push -u origin master",
-    "deploy": "npm run build && firebase deploy"
+    "deploy": "npm run save && npm run build && firebase deploy"
   },
   "eslintConfig": {
     "extends": "react-app"
