@@ -8,8 +8,9 @@ function SideNav() {
 
   useEffect(() => {
     const unsubscribe = db
-      .collection('recents')
-      .orderBy('createdAt', 'desc')
+      .collection('contacts')
+      .orderBy('accessedAt', 'desc')
+      .limit(5)
       .onSnapshot((snapshot) => {
         console.log(snapshot);
         if (snapshot.size) {
@@ -19,7 +20,6 @@ function SideNav() {
             data.id = doc.id;
             contactsArray.push(data);
           });
-          contactsArray = uniqBy(contactsArray, (e) => e.contactId).slice(0, 5);
           setContacts(contactsArray);
         }
       });
@@ -33,7 +33,7 @@ function SideNav() {
       <div className="SideNav__title">Recent</div>
       {contacts.map((recent) => {
         return (
-          <NavLink key={recent.id} to={'/contacts/' + recent.contactId}>
+          <NavLink key={recent.id} to={'/contacts/' + recent.id}>
             {recent.firstName + ' ' + recent.lastName}
           </NavLink>
         );

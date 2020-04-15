@@ -16,7 +16,7 @@ function ContactNew() {
   async function saveContact(e) {
     e.preventDefault();
     contact.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-    let { id } = await db.collection('contacts').add(contact);
+    let { id } = await db.collection('contacts').set(contact);
     setRedirect(id);
   }
 

@@ -29,6 +29,10 @@ a {
 	border: 0;
 	cursor: pointer;
 	line-height: 1;
+
+	&--delete {
+		color: $red;
+	}
 }
 
 h1 {
@@ -100,6 +104,7 @@ label {
 	left: 0;
 	top: 0;
 	height: 100vh;
+	border-right: 1px solid #eee;
 
 	&__title {
 		color: #999;
@@ -125,6 +130,12 @@ label {
 			padding-top: 0.75rem;
 			margin-top: 0.75rem;
 			border-top: 1px solid #eee;
+		}
+	}
+
+	&__complete {
+		.Task {
+			opacity: 0.25;
 		}
 	}
 
@@ -166,6 +177,8 @@ label {
 .Contact {
 	&__body {
 		display: flex;
+		position: relative;
+		min-height: 10vh;
 	}
 
 	&__notes {
@@ -178,14 +191,15 @@ label {
 		flex: auto;
 		max-width: 360px;
 	}
+
+	&__delete {
+		position: absolute;
+		bottom: 2rem;
+	}
 }
 
 .Task {
 	display: flex;
-
-	&.is--complete {
-		opacity: 0.25;
-	}
 
 	&__text {
 		padding: 9px 1rem 9px 0;
@@ -308,7 +322,6 @@ label {
 		bottom: 2rem;
 		margin: 0;
 		background-color: transparent;
-		color: $red;
 	}
 
 	&__editor {

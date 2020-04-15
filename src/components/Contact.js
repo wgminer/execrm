@@ -11,6 +11,7 @@ function Contact(props) {
   const [notes, setNotes] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [formInput, setFormInput] = useState();
+  const [redirect, setRedirect] = useState(false);
 
   useEffect(() => {
     const unsubscribe = db
@@ -22,34 +23,20 @@ function Contact(props) {
           let doc = { ...snapshot.data() };
           doc.id = snapshot.id;
           setContact(doc);
-          db.collection('recents').add({
-            contactId: doc.id,
-            firstName: doc.firstName,
-            lastName: doc.lastName,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-          });
+          db.collection('contacts').doc(doc.id).set(
+            {
+              accessedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            },
+            { merge: true }
+          );
         }
       });
     return () => unsubscribe();
   }, [props.match.params.id]);
 
-  function createNote() {
-    let updatedNotes = [...notes];
-    let newNote = {
-      title: '',
-      text: 'hello world',
-      contactId: contact.id,
-    };
-    updatedNotes.push(newNote);
-    db.collection('notes').add(newNote);
-    setNotes(updatedNotes);
-  }
-
-  function updateNote(id, e) {
-    let updatedNotes = [...notes];
-    let index = updatedNotes.findIndex((n) => n.id == id);
-    updatedNotes[index][e.target.name] = e.target.value;
-    setNotes(updatedNotes);
+  async function deleteContact() {
+    await db.collection('contacts').doc(contact.id).delete();
+    setRedirect(true);
   }
 
   if (!contact) {
@@ -58,6 +45,10 @@ function Contact(props) {
   }
 
   document.title = `${contact.firstName} ${contact.lastName} | Execrm`;
+
+  if (redirect) {
+    return <Redirect to="/contacts" />;
+  }
 
   return (
     <div className="Contact">
@@ -72,6 +63,12 @@ function Contact(props) {
           <TaskList contactId={contact.id} />
         </div>
       </div>
+      <button
+        className="Contact__delete button button--delete"
+        onClick={deleteContact}
+      >
+        Delete
+      </button>
     </div>
   );
 }

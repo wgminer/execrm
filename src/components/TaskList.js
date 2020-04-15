@@ -6,13 +6,16 @@ import {
   Check as CompleteIcon,
   RadioButtonUnchecked as IncompleteIcon,
 } from '@material-ui/icons';
+import UIfx from 'uifx';
 import firebase from 'firebase';
 import db from '../firebase';
+import wavFile from '../chime.wav';
 
 function TaskList(props) {
   const [tasks, setTasks] = useState([]);
   const [formInput, setFormInput] = useState('');
   const [focusedTask, setFocusedTask] = useState(false);
+  const beep = new UIfx(wavFile);
 
   useEffect(() => {
     let ref = db.collection('tasks').orderBy('createdAt', 'desc');
@@ -53,6 +56,11 @@ function TaskList(props) {
     let i = taskCopy.findIndex((t) => t.id == id);
     let task = taskCopy[i];
     task.isComplete = !task.isComplete;
+
+    if (task.isComplete) {
+      beep.play();
+    }
+
     task.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
     db.collection('tasks').doc(task.id).set(task);
   }
@@ -80,6 +88,58 @@ function TaskList(props) {
     db.collection('tasks').doc(tasks[index].id).delete();
   }
 
+  function Task(props) {
+    let { task } = props;
+    if (focusedTask == task.id) {
+      return (
+        <li key={task.id} className="Task is--focused">
+          <input
+            type="checkbox"
+            checked={task.isComplete}
+            onChange={(e) => toggleTaskComplete(task.id)}
+          />
+          <div>
+            <TextareaAutosize
+              autoFocus={true}
+              name="text"
+              onChange={(e) => updateTask(e, task.id)}
+              onBlur={() => setFocusedTask(false)}
+              value={task.text}
+              rows={1}
+              onKeyUp={(e) => {
+                if (e.key === 'Escape') {
+                  setFocusedTask(false);
+                }
+              }}
+            />
+            <button
+              className="button button--delete"
+              onClick={(e) => deleteTask(e, task.id)}
+            >
+              Delete
+            </button>
+          </div>
+        </li>
+      );
+    }
+
+    return (
+      <li key={task.id} className="Task">
+        <input
+          type="checkbox"
+          checked={task.isComplete}
+          onChange={(e) => toggleTaskComplete(task.id)}
+        />
+        <div className="Task__text" onClick={() => setFocusedTask(task.id)}>
+          {task.text}
+        </div>
+      </li>
+    );
+  }
+
+  let incompleteTasks = tasks.filter((t) => !t.isComplete);
+  let completeTasks = tasks.filter((t) => t.isComplete);
+
   return (
     <div className="TaskList">
       <form onSubmit={createTask}>
@@ -89,77 +149,18 @@ function TaskList(props) {
           placeholder="+ New Task"
         />
       </form>
-      <ul>
-        {tasks
-          .filter((t) => !t.isComplete)
-          .map((task, i) => {
-            if (focusedTask == task.id) {
-              return (
-                <li key={task.id} className="Task is--focused">
-                  <input
-                    type="checkbox"
-                    checked={task.isComplete}
-                    onChange={(e) => toggleTaskComplete(task.id)}
-                  />
-                  <div>
-                    <TextareaAutosize
-                      autoFocus={true}
-                      name="text"
-                      onChange={(e) => updateTask(e, task.id)}
-                      onBlur={() => setFocusedTask(false)}
-                      value={task.text}
-                      rows={1}
-                      onKeyUp={(e) => {
-                        if (e.key === 'Escape') {
-                          setFocusedTask(false);
-                        }
-                      }}
-                    />
-                    <button
-                      className="Note__delete button button--delete"
-                      onClick={(e) => deleteTask(e, task.id)}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </li>
-              );
-            }
-
-            return (
-              <li key={task.id} className="Task">
-                <input
-                  type="checkbox"
-                  checked={task.isComplete}
-                  onChange={(e) => toggleTaskComplete(task.id)}
-                />
-                <div
-                  className="Task__text"
-                  onClick={() => setFocusedTask(task.id)}
-                >
-                  {task.text}
-                </div>
-              </li>
-            );
-          })}
+      <ul class="TaskList__incomplete">
+        {incompleteTasks.map((task, i) => {
+          return <Task task={task} />;
+        })}
       </ul>
-      <ul>
-        {tasks
-          .filter((t) => t.isComplete)
-          // .splice(0, 5)
-          .map((task, i) => {
-            return (
-              <li key={task.id} className="Task is--complete">
-                <input
-                  type="checkbox"
-                  checked={task.isComplete}
-                  onChange={(e) => toggleTaskComplete(task.id)}
-                />
-                <div className="Task__text">{task.text}</div>
-              </li>
-            );
+      {completeTasks.length > 0 && (
+        <ul class="TaskList__complete">
+          {completeTasks.map((task, i) => {
+            return <Task task={task} />;
           })}
-      </ul>
+        </ul>
+      )}
     </div>
   );
 }
