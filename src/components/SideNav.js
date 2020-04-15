@@ -4,26 +4,26 @@ import { uniqBy } from 'lodash';
 import db from '../firebase';
 
 function SideNav() {
-  const [contacts, setContacts] = useState([]);
+  // const [contacts, setContacts] = useState([]);
 
-  useEffect(() => {
-    const unsubscribe = db
-      .collection('recents')
-      .orderBy('createdAt', 'desc')
-      .onSnapshot((snapshot) => {
-        if (snapshot.size) {
-          let contactsArray = [];
-          snapshot.forEach((doc) => {
-            let data = { ...doc.data() };
-            data.id = doc.id;
-            contactsArray.push(data);
-          });
-          contactsArray = uniqBy(contactsArray, (e) => e.contactId).slice(0, 5);
-          setContacts(contactsArray);
-        }
-      });
-    return () => unsubscribe();
-  }, []);
+  // useEffect(() => {
+  //   const unsubscribe = db
+  //     .collection('recents')
+  //     .orderBy('createdAt', 'desc')
+  //     .onSnapshot((snapshot) => {
+  //       if (snapshot.size) {
+  //         let contactsArray = [];
+  //         snapshot.forEach((doc) => {
+  //           let data = { ...doc.data() };
+  //           data.id = doc.id;
+  //           contactsArray.push(data);
+  //         });
+  //         contactsArray = uniqBy(contactsArray, (e) => e.contactId).slice(0, 5);
+  //         setContacts(contactsArray);
+  //       }
+  //     });
+  //   return () => unsubscribe();
+  // }, []);
 
   return (
     <div className="SideNav">

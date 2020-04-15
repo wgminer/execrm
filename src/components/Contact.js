@@ -39,12 +39,12 @@ function Contact(props) {
     return 'Loading';
   } else {
     console.log('Set recent!');
-    db.collection('recents').add({
-      contactId: contact.id,
-      firstName: contact.firstName,
-      lastName: contact.lastName,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-    });
+    // db.collection('recents').add({
+    //   contactId: contact.id,
+    //   firstName: contact.firstName,
+    //   lastName: contact.lastName,
+    //   createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    // });
   }
 
   document.title = `${contact.firstName} ${contact.lastName} | Execrm`;
