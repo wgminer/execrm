@@ -46,7 +46,7 @@ function TaskList(props) {
     let task = taskCopy[i];
     task[e.target.name] = e.target.value;
     task.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
-    db.collection('tasks').doc(task.id).set(task);
+    // db.collection('tasks').doc(task.id).set(task);
     taskCopy[i] = task;
     setTasks(taskCopy);
   }
@@ -92,7 +92,7 @@ function TaskList(props) {
     let { task } = props;
     if (focusedTask == task.id) {
       return (
-        <li key={task.id} className="Task is--focused">
+        <li className="Task is--focused">
           <input
             type="checkbox"
             checked={task.isComplete}
@@ -124,7 +124,7 @@ function TaskList(props) {
     }
 
     return (
-      <li key={task.id} className="Task">
+      <li className="Task">
         <input
           type="checkbox"
           checked={task.isComplete}
@@ -149,15 +149,15 @@ function TaskList(props) {
           placeholder="+ New Task"
         />
       </form>
-      <ul class="TaskList__incomplete">
+      <ul className="TaskList__incomplete">
         {incompleteTasks.map((task, i) => {
-          return <Task task={task} />;
+          return <Task key={task.id} task={task} />;
         })}
       </ul>
       {completeTasks.length > 0 && (
-        <ul class="TaskList__complete">
+        <ul className="TaskList__complete">
           {completeTasks.map((task, i) => {
-            return <Task task={task} />;
+            return <Task key={task.id} task={task} />;
           })}
         </ul>
       )}

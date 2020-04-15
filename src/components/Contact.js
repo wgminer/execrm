@@ -18,30 +18,33 @@ function Contact(props) {
       .collection('contacts')
       .doc(props.match.params.id)
       .onSnapshot((snapshot) => {
-        console.log(snapshot);
         if (snapshot.exists) {
           let doc = { ...snapshot.data() };
           doc.id = snapshot.id;
           setContact(doc);
-          db.collection('contacts').doc(doc.id).set(
-            {
-              accessedAt: firebase.firestore.FieldValue.serverTimestamp(),
-            },
-            { merge: true }
-          );
+          console.log('SNAPSHOT');
         }
       });
     return () => unsubscribe();
   }, [props.match.params.id]);
 
-  async function deleteContact() {
-    await db.collection('contacts').doc(contact.id).delete();
+  function deleteContact() {
+    db.collection('contacts').doc(contact.id).delete();
+    db.collection('recents').where('contactId', '==', contact.id).delete();
     setRedirect(true);
   }
 
   if (!contact) {
     document.title = `Loading | Execrm`;
     return 'Loading';
+  } else {
+    console.log('Set recent!');
+    db.collection('recents').add({
+      contactId: contact.id,
+      firstName: contact.firstName,
+      lastName: contact.lastName,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
   }
 
   document.title = `${contact.firstName} ${contact.lastName} | Execrm`;
